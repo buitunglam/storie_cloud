@@ -17,18 +17,20 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
+import { createAccount } from "@/lib/actions/user.actions";
+import OTPModal from "@/components/ui/OTPModal";
 type FormType = "sign-in" | "sign-up";
 
 const authFormSchema = (formType: FormType) => {
   return z.object({
-    fullname:
+    fullName:
       formType === "sign-up"
         ? z
             .string()
             .min(2, {
               message: "Username must be at least 2 characters.",
             })
-            .max(50,  {
+            .max(50, {
               message: "Username must contain at most 50 character",
             })
         : z.string().optional(),
@@ -37,19 +39,36 @@ const authFormSchema = (formType: FormType) => {
 };
 
 const AuthForm = ({ type }: { type: FormType }) => {
+  const [accountId, setAccountId] = useState(null);
+  const [isOpen, setIsOpen] = useState(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState("");
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullname: "",
+      fullName: "",
       email: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    setIsLoading(true);
+    const { fullName, email } = values;
+    try {
+      const user = await createAccount({
+        fullName: fullName || "",
+        email: email || "",
+      });
+      const accountId = user.accountId;
+      setAccountId(accountId);
+    } catch (error) {
+      console.log(error);
+      setErrorMessage("Failed to create account. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   }
   return (
     <>
@@ -64,7 +83,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
           {type === "sign-up" && (
             <FormField
               control={form.control}
-              name="fullname"
+              name="fullName"
               render={({ field }) => (
                 <FormItem>
                   <div className="shad-form-item">
@@ -136,6 +155,9 @@ const AuthForm = ({ type }: { type: FormType }) => {
           </div>
         </form>
       </Form>
+      {true && (
+        <OTPModal email={form.getValues("email")} accountId={accountId} isOpen={isOpen} setIsOpen={setIsOpen}  />
+      )}
     </>
   );
 };

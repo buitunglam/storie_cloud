@@ -3,7 +3,7 @@ import React from "react";
 
 const SignIn = () => {
   return (
-    <div>
+    <div className="flex flex-1 w-[40%]">
       <AuthForm type="sign-in" />
     </div>
   );

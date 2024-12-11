@@ -1,3 +1,5 @@
+'use server'
+
 import { ID, Query } from "node-appwrite";
 import { createAdminClient } from "../appwrite";
 import { appwriteConfig } from "../appwrite/config";
@@ -47,7 +49,7 @@ export const createAccount = async ({
       {
         fullName,
         email,
-        avarta:
+        avatar:
           "https://www.google.com/url?sa=i&url=https%3A%2F%2Fstock.adobe.com%2Fsearch%3Fk%3Dprofile%2Bplaceholder&psig=AOvVaw34mJW8mch-pJU5ZqZI4_oe&ust=1733876623006000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCOCwy_X3m4oDFQAAAAAdAAAAABAQ",
         accountId,
       }
