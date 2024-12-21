@@ -1,31 +1,24 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "../globals.css";
-import { Poppins } from "next/font/google";
+import React from "react";
+import MobileNavigation from "../components/MobileNavigation";
+import Header from "../components/Header";
+import Sidebar from "../components/Sidebar";
+import { getCurrentUser } from "@/lib/actions/user.actions";
+import { redirect } from "next/navigation";
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-  variable: "--font-poppins",
-});
-
-export const metadata: Metadata = {
-  title: "StoriCloud",
-  description: "StoriCloud - Store your memories",
+const Layout = async ({ children }: { children: React.ReactNode }) => {
+  const currentUser = await getCurrentUser();
+  console.log("currentUser---", currentUser);
+  if (!currentUser) return redirect("sign-in");
+  return (
+    <main className="flex h-screen">
+      <Sidebar {...currentUser} />
+      <section className="flex h-full flex-1 flex-col">
+        <MobileNavigation {...currentUser} />
+        <Header />
+        <div className="main-content">{children}</div>
+      </section>
+    </main>
+  );
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${poppins.variable} antialiased`}
-      >
-        {children}
-      </body>
-    </html>
-  );
-}
+export default Layout;
