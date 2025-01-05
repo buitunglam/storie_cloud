@@ -11,21 +11,68 @@ import {
 import Image from "next/image";
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { MAX_FILE_SIZE } from "../app/constants";
+import { useToast } from "@/hooks/use-toast";
+import { usePathname } from "next/navigation";
+import { uploadFile } from "@/lib/actions/file.actions";
 
 interface Props {
   ownerId: string;
   accountId: string;
-  className: string;
+  className?: string;
 }
 
 const FileUploader = ({ ownerId, accountId, className }: Props) => {
+  const { toast } = useToast();
+  const path = usePathname();
   const [files, setFiles] = useState<File[]>([]);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    // Do something with the files
-    console.log("acceptedFiles--", acceptedFiles);
-    setFiles(acceptedFiles);
-  }, []);
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      // Do something with the files
+      console.log("acceptedFiles--", acceptedFiles);
+      setFiles(acceptedFiles);
+
+      const uploadPromises = acceptedFiles.map(async (file) => {
+        if (file.size > MAX_FILE_SIZE) {
+          setFiles((prevFiles) =>
+            prevFiles.filter((prevFile) => prevFile.name !== file.name)
+          );
+          return toast({
+            description: (
+              <p className="body-2 text-white">
+                <span className="font-semibold">{file.name}</span> is too large.
+                Max File is 50MB.
+              </p>
+            ),
+            className: "error-toast",
+          });
+        }
+
+        return uploadFile({ file, ownerId, accountId, path }).then(
+          (uploadFile) => {
+            if (uploadFile) {
+              setFiles((prevFiles) =>
+                prevFiles.filter((prevFile) => prevFile.name !== file.name)
+              );
+              return toast({
+                description: (
+                  <p className="body-2 text-white">
+                    <span className="font-semibold">{file.name}</span> uploaded
+                    successfully.
+                  </p>
+                ),
+                className: "success-toast",
+              });
+            }
+          }
+        );
+      });
+
+      await Promise.all(uploadPromises);
+    },
+    [ownerId, accountId, path]
+  );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   const handleRemoveFile = (e: React.MouseEvent, fileName: string) => {
@@ -86,11 +133,6 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
             })}
           </ul>
         </>
-      )}
-      {isDragActive ? (
-        <p>Drop the files here ...</p>
-      ) : (
-        <p>Select file upload</p>
       )}
     </div>
   );

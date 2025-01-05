@@ -18,7 +18,7 @@ import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
 import { createAccount, signInUser } from "@/lib/actions/user.actions";
-import OTPModal from "@/app/components/OTPModal";
+import OTPModal from "@/components/OTPModal";
 type FormType = "sign-in" | "sign-up";
 
 const authFormSchema = (formType: FormType) => {

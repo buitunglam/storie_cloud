@@ -38,7 +38,7 @@ export const createAdminClient = async () => {
     get avatars() {
       return new Avatars(client);
     },
-    getStorage() {
+    get storage() {
       return new Storage(client);
     },
   };
